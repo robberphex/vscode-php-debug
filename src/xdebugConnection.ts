@@ -454,6 +454,14 @@ export class Property extends BaseProperty {
             );
         }
     }
+
+    /**
+     * Sets the value of this property through a property_set command
+     */
+    public set(value: string): Promise<PropertyGetResponse> {
+        return this.context.stackFrame.connection.sendPropertySetCommand(this, value);
+    }
+
     /**
      * Returns the child properties of this property by doing another property_get
      * @returns Promise.<Property[]>
@@ -534,7 +542,14 @@ export class FeatureSetResponse extends Response {
 }
 
 /**
- * This class represents a connection to Xdebug and is instantiated with a socket.
+ * Escapes a value to pass it as an argument in an XDebug command
+ */
+function escape(value: string): string {
+    return '"' + value.replace(/("|\\)/g, '\\$1') + '"';
+}
+
+/**
+ * This class represents a connection to XDebug and is instantiated with a socket.
  */
 export class Connection extends DbgpConnection {
     /** a counter for unique connection IDs */
@@ -773,16 +788,20 @@ export class Connection extends DbgpConnection {
         );
     }
 
+    // ------------------------------ property --------------------------------------
+
     /** Sends a property_get command */
     public async sendPropertyGetCommand(property: Property): Promise<PropertyGetResponse> {
-        const escapedFullName = '"' + property.fullName.replace(/("|\\)/g, '\\$1') + '"';
-        return new PropertyGetResponse(
-            await this._executeCommand(
-                'property_get',
-                `-d ${property.context.stackFrame.level} -c ${property.context.id} -n ${escapedFullName}`
-            ),
-            property
-        );
+        return new PropertyGetResponse(await this._executeCommand('property_get', `-d ${property.context.stackFrame.level} -c ${property.context.id} -n ${escape(property.fullName)}`), property);
+    }
+
+    /** Sends a property_set command */
+    public async sendPropertySetCommand(property: Property, value: string): Promise<Response> {
+        return new Response(await this._executeCommand('property_set', [
+            '-d', property.context.stackFrame.level,
+            '-c', property.context.id,
+            '-n', escape(property.fullName)
+        ].join(' '), value), property.context.stackFrame.connection);
     }
 
     // ------------------------------- eval -----------------------------------------

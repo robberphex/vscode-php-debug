@@ -47,9 +47,9 @@ In your project, go to the debugger and hit the little gear icon and choose _PHP
 - `request`: Always `"launch"`
 - `hostname`: The address to bind to when listening for Xdebug (default: all IPv6 connections if available, else all IPv4 connections)
 - `port`: The port on which to listen for Xdebug (default: `0`)
-- `stopOnEntry`: Wether to break at the beginning of the script (default: `false`)
+- `stopOnEntry`: Whether to break at the beginning of the script (default: `false`)
 - `pathMappings`: A list of server paths mapping to the local source paths on your machine, see "Remote Host Debugging" below
-- `log`: Wether to log all communication between VS Code and the adapter to the debug console. See _Troubleshooting_ further down.
+- `log`: Whether to log all communication between VS Code and the adapter to the debug console. See _Troubleshooting_ further down.
 - `ignore`: An optional array of glob patterns that errors should be ignored from (for example `**/vendor/**/*.php`)
 - `xdebugSettings`: Allows you to override Xdebug's remote debugging settings to fine tuning Xdebug to your needs. For example, you can play with `max_children` and `max_depth` to change the max number of array and object children that are retrieved and the max depth in structures like arrays and objects. This can speed up the debugger on slow machines.
   For a full list of feature names that can be set please refer to the [Xdebug documentation](https://xdebug.org/docs-dbgp.php#feature-names).

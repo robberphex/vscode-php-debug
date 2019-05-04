@@ -28,7 +28,7 @@ if ($LASTEXITCODE -ne 0) {
 Rename-Item .\php\php.ini-development php.ini
 $env:PATH += ';' + (Join-Path $PWD 'php')
 
-# Install XDebug
+# Install Xdebug
 $phpMinorVersion = $env:PHP_VERSION -replace '\.\d+$'
 $xdebugUrl = "https://xdebug.org/files/php_xdebug-$env:XDEBUG_VERSION-$phpMinorVersion-vc$env:VC_VERSION-nts.dll"
 $xdebugPath = Join-Path $PWD 'php\ext\xdebug.dll'

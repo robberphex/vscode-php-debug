@@ -721,7 +721,7 @@ export class Connection extends DbgpConnection {
      * or any command.
      */
     public async sendFeatureGetCommand(feature: string): Promise<XMLDocument> {
-        return await this._enqueueCommand('feature_get', `-n feature`)
+        return await this._enqueueCommand('feature_get', `-n ${feature}`)
     }
 
     /**

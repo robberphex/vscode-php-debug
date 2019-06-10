@@ -15,8 +15,7 @@
     "email": "felix.b@outlook.com"
   },
   "engines": {
-    "vscode": "^1.6.0",
-    "node": ">=6.0.0"
+    "vscode": "^1.22.0"
   },
   "icon": "images/logo.png",
   "galleryBanner": {
@@ -34,40 +33,40 @@
     "url": "https://github.com/felixfbecker/vscode-php-debug/issues"
   },
   "dependencies": {
-    "file-url": "^2.0.0",
-    "iconv-lite": "^0.4.15",
+    "file-url": "^3.0.0",
+    "iconv-lite": "^0.4.24",
     "minimatch": "^3.0.3",
-    "moment": "^2.17.1",
+    "moment": "^2.24.0",
     "url-relative": "^1.0.0",
     "urlencode": "^1.1.0",
-    "vscode-debugadapter": "^1.11.0",
-    "vscode-debugprotocol": "^1.11.0",
+    "vscode-debugadapter": "^1.34.0",
+    "vscode-debugprotocol": "^1.34.0",
     "xmldom": "^0.1.22"
   },
   "devDependencies": {
-    "@types/chai": "4.0.6",
+    "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",
-    "@types/file-url": "^2.0.0",
-    "@types/minimatch": "^3.0.1",
-    "@types/mocha": "^2.2.44",
-    "@types/node": "7.0.32",
-    "@types/semver": "^5.4.0",
+    "@types/minimatch": "^3.0.3",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^8.10.22",
+    "@types/semver": "^6.0.0",
     "@types/xmldom": "^0.1.29",
-    "chai": "^4.0.2",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.0.0",
     "husky": "^0.14.3",
-    "mocha": "^5.0.0",
-    "nyc": "^11.0.2",
-    "prettier": "1.14.2",
-    "semantic-release": "^15.9.8",
-    "semantic-release-vsce": "^2.1.2",
-    "semver": "^5.3.0",
-    "tslint": "^5.4.3",
-    "tslint-config-prettier": "^1.6.0",
-    "typescript": "^2.1.4",
+    "mocha": "^5.2.0",
+    "nyc": "^14.1.1",
+    "prettier": "1.18.2",
+    "semantic-release": "^15.13.12",
+    "semantic-release-vsce": "^2.2.8",
+    "semver": "^5.7.0",
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.4.5",
     "validate-commit-msg": "^2.14.0",
-    "vsce": "^1.28.0",
-    "vscode-debugadapter-testsupport": "^1.11.0"
+    "vsce": "^1.62.0",
+    "vscode": "^1.1.33",
+    "vscode-debugadapter-testsupport": "^1.34.0"
   },
   "release": {
     "verifyConditions": [
@@ -112,6 +111,11 @@
     ]
   },
   "contributes": {
+    "breakpoints": [
+      {
+        "language": "php"
+      }
+    ],
     "debuggers": [
       {
         "type": "php",
@@ -125,7 +129,9 @@
         "runtime": "node",
         "configurationAttributes": {
           "launch": {
-            "required": [],
+            "required": [
+              "program"
+            ],
             "properties": {
               "program": {
                 "type": "string",
@@ -249,8 +255,30 @@
             "type": "php",
             "request": "launch",
             "program": "${file}",
-            "cwd": "${fileDirname}",
-            "port": 0
+            "cwd": "${fileDirname}"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "PHP: Listen for Xdebug",
+            "description": "Listen for Xdebug",
+            "body": {
+              "name": "Listen for Xdebug",
+              "type": "php",
+              "request": "launch",
+              "port": 9000
+            }
+          },
+          {
+            "label": "PHP: Launch currently open script",
+            "description": "Launch currently open script",
+            "body": {
+              "name": "Launch currently open script",
+              "type": "php",
+              "request": "launch",
+              "program": "^\"\\${file}\"",
+              "cwd": "^\"\\${fileDirname}\""
+            }
           }
         ]
       }

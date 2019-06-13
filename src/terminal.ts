@@ -148,9 +148,7 @@ class LinuxTerminalService extends DefaultTerminalService {
             if (!FS.existsSync(LinuxTerminalService.LINUX_TERM)) {
                 reject(
                     new Error(
-                        `Cannot find '${
-                        LinuxTerminalService.LINUX_TERM
-                        }' for launching the node program. See http://go.microsoft.com/fwlink/?linkID=534832#_20002`
+                        `Cannot find '${LinuxTerminalService.LINUX_TERM}' for launching the node program. See http://go.microsoft.com/fwlink/?linkID=534832#_20002`
                     )
                 )
                 return
@@ -158,7 +156,7 @@ class LinuxTerminalService extends DefaultTerminalService {
 
             const bashCommand = `cd "${dir}"; "${args.join('" "')}"; echo; read -p "${
                 LinuxTerminalService.WAIT_MESSAGE
-                }" -n1;`
+            }" -n1;`
 
             const termArgs = [
                 '--title',
@@ -247,7 +245,7 @@ class MacTerminalService extends DefaultTerminalService {
 
 function extendObject<T>(objectCopy: T, object: T): T {
     for (let key in object) {
-        (<any>objectCopy)[key] = (<any>object)[key]
+        ;(<any>objectCopy)[key] = (<any>object)[key]
     }
 
     return objectCopy

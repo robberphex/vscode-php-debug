@@ -2,7 +2,7 @@
   "name": "php-debug",
   "displayName": "PHP Debug",
   "version": "0.0.0-development",
-  "publisher": "felixfbecker",
+  "publisher": "robberphex",
   "license": "MIT",
   "description": "Debug support for PHP with Xdebug",
   "keywords": [
@@ -27,10 +27,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/felixfbecker/vscode-php-debug.git"
+    "url": "https://github.com/robberphex/vscode-php-debug.git"
   },
   "bugs": {
-    "url": "https://github.com/felixfbecker/vscode-php-debug/issues"
+    "url": "https://github.com/robberphex/vscode-php-debug/issues"
   },
   "dependencies": {
     "file-url": "^3.0.0",

@@ -14,7 +14,7 @@ import minimatch = require('minimatch')
 
 if (process.env['VSCODE_NLS_CONFIG']) {
     try {
-        moment.locale(JSON.parse(process.env['VSCODE_NLS_CONFIG']).locale)
+        moment.locale(JSON.parse(process.env['VSCODE_NLS_CONFIG'] || "").locale)
     } catch (e) {
         // ignore
     }
@@ -211,7 +211,7 @@ class PhpDebugSession extends vscode.DebugSession {
             const runtimeExecutable = args.runtimeExecutable || 'php'
             const programArgs = args.args || []
             const cwd = args.cwd || process.cwd()
-            const env = args.env || process.env
+            const env = args.env || process.env as { [key: string]: string };
 
             runtimeArgs = this.prependDebugOptions(runtimeArgs, debugPort);
 

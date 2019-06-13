@@ -1,7 +1,11 @@
 # PHP Debug Adapter for Visual Studio Code
 
-[![vs marketplace](https://img.shields.io/vscode-marketplace/v/felixfbecker.php-debug.svg?label=vs%20marketplace)](https://marketplace.visualstudio.com/items?itemName=felixfbecker.php-debug) [![downloads](https://img.shields.io/vscode-marketplace/d/felixfbecker.php-debug.svg)](https://marketplace.visualstudio.com/items?itemName=felixfbecker.php-debug) [![rating](https://img.shields.io/vscode-marketplace/r/felixfbecker.php-debug.svg)](https://marketplace.visualstudio.com/items?itemName=felixfbecker.php-debug) [![windows build](https://img.shields.io/appveyor/ci/felixfbecker/vscode-php-debug/master.svg?label=windows+build)](https://ci.appveyor.com/project/felixfbecker/vscode-php-debug)
-[![macos/linux build](https://img.shields.io/travis/felixfbecker/vscode-php-debug/master.svg?label=macos/linux+build)](https://travis-ci.org/felixfbecker/vscode-php-debug) [![codecov](https://codecov.io/gh/felixfbecker/vscode-php-debug/branch/master/graph/badge.svg)](https://codecov.io/gh/felixfbecker/vscode-php-debug) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier) [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release) [![chat: on gitter](https://badges.gitter.im/felixfbecker/vscode-php-debug.svg)](https://gitter.im/felixfbecker/vscode-php-debug?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![vs marketplace](https://img.shields.io/vscode-marketplace/v/robberphex.php-debug.svg?label=vs%20marketplace)](https://marketplace.visualstudio.com/items?itemName=robberphex.php-debug)
+[![downloads](https://img.shields.io/vscode-marketplace/d/robberphex.php-debug.svg)](https://marketplace.visualstudio.com/items?itemName=robberphex.php-debug)
+[![rating](https://img.shields.io/vscode-marketplace/r/robberphex.php-debug.svg)](https://marketplace.visualstudio.com/items?itemName=robberphex.php-debug)
+[![build](https://img.shields.io/travis/robberphex/vscode-php-debug/master.svg?label=build)](https://travis-ci.org/robberphex/vscode-php-debug)
+[![codecov](https://codecov.io/gh/robberphex/vscode-php-debug/branch/master/graph/badge.svg)](https://codecov.io/gh/robberphex/vscode-php-debug)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
 ![Demo GIF](images/demo.gif)
 
@@ -12,10 +16,6 @@ Install the extension: Press `F1`, type `ext install php-debug`.
 This extension is a debug adapter between VS Code and [Xdebug](https://xdebug.org/) by Derick Rethan. Xdebug is a PHP extension (a `.so` file on Linux and a `.dll` on Windows) that needs to be installed on your server.
 
 1. [Install Xdebug](https://xdebug.org/docs/install)
-   **_I highly recommend you make a simple `test.php` file, put a `phpinfo();` statement in there, then copy the output and paste it into the [Xdebug installation wizard](https://xdebug.org/wizard.php). It will analyze it and give you tailored installation instructions for your environment._** In short:
-
-   - On Windows: [Download](https://xdebug.org/download.php) the appropiate precompiled DLL for your PHP version, architecture (64/32 Bit), thread safety (TS/NTS) and Visual Studio compiler version and place it in your PHP extension folder.
-   - On Linux: Either download the source code as a tarball or [clone it with git](https://xdebug.org/docs/install#source), then [compile it](https://xdebug.org/docs/install#compile).
 
 2. [Configure PHP to use Xdebug](https://xdebug.org/docs/install#configure-php) by adding `zend_extension=path/to/xdebug` to your php.ini. The path of your php.ini is shown in your `phpinfo()` output under "Loaded Configuration File".
 
@@ -46,7 +46,7 @@ In your project, go to the debugger and hit the little gear icon and choose _PHP
 
 - `request`: Always `"launch"`
 - `hostname`: The address to bind to when listening for Xdebug (default: all IPv6 connections if available, else all IPv4 connections)
-- `port`: The port on which to listen for Xdebug (default: `9000`)
+- `port`: The port on which to listen for Xdebug (default: `0`)
 - `stopOnEntry`: Wether to break at the beginning of the script (default: `false`)
 - `pathMappings`: A list of server paths mapping to the local source paths on your machine, see "Remote Host Debugging" below
 - `log`: Wether to log all communication between VS Code and the adapter to the debug console. See _Troubleshooting_ further down.
@@ -102,10 +102,9 @@ Please also note that setting any of the CLI debugging options will not work wit
 
 ## Troubleshooting
 
-- Ask a question on [Gitter](https://gitter.im/felixfbecker/vscode-php-debug)
 - If you think you found a bug, [open an issue](https://github.com/felixfbecker/vscode-php-debug/issues)
 - Make sure you have the latest version of this extension and Xdebug installed
-- Try out a simple PHP file to recreate the issue, for example from the [testproject](https://github.com/felixfbecker/vscode-php-debug/tree/master/testproject)
+- Try out a simple PHP file to recreate the issue, for example from the [testproject](./testproject)
 - In your php.ini, set [`xdebug.remote_log = /path/to/logfile`](https://xdebug.org/docs/remote#remote_log)
   (make sure your webserver has write permissions to the file)
 - Set `"log": true` in your launch.json
@@ -124,4 +123,4 @@ VS Code will open an "Extension Development Host" with the debug adapter running
 
 The extension is written in TypeScript and compiled using a Gulpfile that first transpiles to ES6 and then uses Babel to specifically target VS Code's Node version. You can run the compile task through `npm run compile`, `gulp compile` or from VS Code with `Ctrl`+`Shift`+`B`. `npm run watch` / `gulp watch` enables incremental compilation.
 
-Tests are written with Mocha and can be run with `npm test`. The tests are run in CI on Linux and Windows against PHP 5.4, 5.6, 7.0 and Xdebug 2.3, 2.4.
+Tests are written with Mocha and can be run with `npm test`. The tests are run in CI on Linux and Windows against PHP 7.0 ~ 7.3 and Xdebug 2.7.0, [2.8.0](https://github.com/RobberPhex/xdebug/releases/tag/2.8.0).

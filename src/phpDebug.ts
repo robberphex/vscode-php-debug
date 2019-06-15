@@ -983,8 +983,26 @@ class PhpDebugSession extends vscode.DebugSession {
         this._checkStatus(xdebugResponse)
     }
 
-    protected pauseRequest(response: VSCodeDebugProtocol.PauseResponse, args: VSCodeDebugProtocol.PauseArguments) {
-        this.sendErrorResponse(response, new Error('Pausing the execution is not supported by Xdebug'))
+    protected async pauseRequest(
+        response: VSCodeDebugProtocol.PauseResponse,
+        args: VSCodeDebugProtocol.PauseArguments
+    ) {
+        let xdebugResponse: xdebug.StatusResponse | undefined
+        try {
+            const connection = this._connections.get(args.threadId)
+            if (!connection) {
+                throw new Error('Unknown thread ID ' + args.threadId)
+            }
+            xdebugResponse = await connection.sendStepOutCommand()
+        } catch (error) {
+            this.sendErrorResponse(response, error)
+            if (xdebugResponse) {
+                this._checkStatus(xdebugResponse)
+            }
+            return
+        }
+        this.sendResponse(response)
+        this._checkStatus(xdebugResponse)
     }
 
     protected async disconnectRequest(

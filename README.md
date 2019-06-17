@@ -102,7 +102,7 @@ Please also note that setting any of the CLI debugging options will not work wit
 
 ## Troubleshooting
 
-- If you think you found a bug, [open an issue](https://github.com/felixfbecker/vscode-php-debug/issues)
+- If you think you found a bug, [open an issue](https://github.com/robberphex/vscode-php-debug/issues)
 - Make sure you have the latest version of this extension and Xdebug installed
 - Try out a simple PHP file to recreate the issue, for example from the [testproject](./testproject)
 - In your php.ini, set [`xdebug.remote_log = /path/to/logfile`](https://xdebug.org/docs/remote#remote_log)

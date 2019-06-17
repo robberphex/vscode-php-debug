@@ -99,8 +99,7 @@
     "lint": "npm run tslint && npm run prettier",
     "tslint": "tslint -c tslint.json 'src/**/*.ts'",
     "prettier": "prettier \"**/{*.json,*.yml,.*.yml,*.ts,.prettierrc,*.md}\" --write --list-different",
-    "semantic-release": "semantic-release",
-    "commitmsg": "validate-commit-msg"
+    "semantic-release": "semantic-release"
   },
   "nyc": {
     "include": [
@@ -283,5 +282,10 @@
         ]
       }
     ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "validate-commit-msg"
+    }
   }
 }

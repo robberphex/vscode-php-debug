@@ -5,7 +5,7 @@
 [![rating](https://img.shields.io/vscode-marketplace/r/robberphex.php-debug.svg)](https://marketplace.visualstudio.com/items?itemName=robberphex.php-debug)
 [![build](https://img.shields.io/travis/robberphex/vscode-php-debug/master.svg?label=build)](https://travis-ci.org/robberphex/vscode-php-debug)
 [![codecov](https://codecov.io/gh/robberphex/vscode-php-debug/branch/master/graph/badge.svg)](https://codecov.io/gh/robberphex/vscode-php-debug)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier) [![Greenkeeper badge](https://badges.greenkeeper.io/RobberPhex/vscode-php-debug.svg)](https://greenkeeper.io/)
 
 ![Demo GIF](images/demo.gif)
 

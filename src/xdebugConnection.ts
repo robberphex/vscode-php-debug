@@ -574,27 +574,7 @@ export class Connection extends DbgpConnection {
     /** rejects the init promise */
     private _initPromiseRejectFn: (err?: Error) => any
 
-    /**
-     * a map from transaction IDs to pending commands that have been sent to Xdebug and are awaiting a response.
-     * This should in theory only contain max one element at any time.
-     */
-    private _pendingCommands = new Map<number, Command>()
-
-    /**
-     * Xdebug does NOT support async communication.
-     * This means before sending a new command, we have to wait until we get a response for the previous.
-     * This array is a stack of commands that get passed to _sendCommand once Xdebug can accept commands again.
-     */
-    private _commandQueue: Command[] = []
-
-    private _pendingExecuteCommand = false
-    /**
-     * Whether a command was started that executes PHP, which means the connection will be blocked from
-     * running any additional commands until the execution gets to the next stopping point or exits.
-     */
-    public get isPendingExecuteCommand(): boolean {
-        return this._pendingExecuteCommand
-    }
+    private _pendingFns = new Map<number, (response: XMLDocument) => any>()
 
     /** Constructs a new connection that uses the given socket to communicate with Xdebug. */
     constructor(socket: net.Socket) {
@@ -608,18 +588,19 @@ export class Connection extends DbgpConnection {
         this.on('message', (response: XMLDocument) => {
             if (response.documentElement.nodeName === 'init') {
                 this._initPromiseResolveFn(new InitPacket(response, this))
-            } else {
+            } else if (response.documentElement.nodeName === 'response') {
                 const transactionId = parseInt(response.documentElement.getAttribute('transaction_id')!)
-                if (this._pendingCommands.has(transactionId)) {
-                    const command = this._pendingCommands.get(transactionId)!
-                    this._pendingCommands.delete(transactionId)
-                    this._pendingExecuteCommand = false
-                    command.resolveFn(response)
+                let fn = this._pendingFns.get(transactionId)
+                this._pendingFns.delete(transactionId);
+                if (fn) {
+                    fn(response);
+                } else {
+                    console.error(response.toString());
                 }
-                if (this._commandQueue.length > 0) {
-                    const command = this._commandQueue.shift()!
-                    this._executeCommand(command).catch(command.rejectFn)
-                }
+            } else if (response.documentElement.nodeName === 'stream') {
+                // TODO send event
+            } else if (response.documentElement.nodeName === 'notify') {
+                // TODO process notify
             }
         })
     }
@@ -630,69 +611,39 @@ export class Connection extends DbgpConnection {
     }
 
     /**
-     * Pushes a new command to the queue that will be executed after all the previous commands have finished and we received a response.
-     * If the queue is empty AND there are no pending transactions (meaning we already received a response and Xdebug is waiting for
-     * commands) the command will be executed immediately.
-     */
-    private _enqueueCommand(name: string, args?: string, data?: string): Promise<XMLDocument> {
-        return new Promise((resolveFn, rejectFn) => {
-            this._enqueue({ name, args, data, resolveFn, rejectFn, isExecuteCommand: false })
-        })
-    }
-
-    /**
-     * Pushes a new execute command (one that results in executing PHP code) to the queue that will be executed after all the previous
-     * commands have finished and we received a response.
-     * If the queue is empty AND there are no pending transactions (meaning we already received a response and Xdebug is waiting for
-     * commands) the command will be executed immediately.
-     */
-    private _enqueueExecuteCommand(name: string, args?: string, data?: string): Promise<XMLDocument> {
-        return new Promise((resolveFn, rejectFn) => {
-            this._enqueue({ name, args, data, resolveFn, rejectFn, isExecuteCommand: true })
-        })
-    }
-
-    /** Adds the given command to the queue, or executes immediately if no commands are currently being processed. */
-    private _enqueue(command: Command): void {
-        if (this._commandQueue.length === 0 && this._pendingCommands.size === 0) {
-            this._executeCommand(command)
-        } else {
-            this._commandQueue.push(command)
-        }
-    }
-
-    /**
      * Sends a command to Xdebug with a new transaction ID and calls the callback on the command. This can
      * only be called when Xdebug can actually accept commands, which is after we received a response for the
      * previous command.
      */
-    private async _executeCommand(command: Command): Promise<void> {
+    private async _executeCommand(name: string, args?: string, data?: string): Promise<XMLDocument> {
         const transactionId = this._transactionCounter++
-        let commandString = command.name + ' -i ' + transactionId
-        if (command.args) {
-            commandString += ' ' + command.args
+        let commandString = name + ' -i ' + transactionId
+        if (args) {
+            commandString += ' ' + args
         }
-        if (command.data) {
-            commandString += ' -- ' + new Buffer(command.data).toString('base64')
+        if (data) {
+            commandString += ' -- ' + new Buffer(data).toString('base64')
         }
         commandString += '\0'
-        const data = iconv.encode(commandString, ENCODING)
-        this._pendingCommands.set(transactionId, command)
-        this._pendingExecuteCommand = command.isExecuteCommand
-        await this.write(data)
+        const rawData = iconv.encode(commandString, ENCODING)
+        await this.write(rawData);
+
+        return new Promise<XMLDocument>((resolveFn, rejectFn) => {
+            this._pendingFns.set(transactionId, resolveFn)
+        });
     }
 
     public close() {
-        this._commandQueue = []
-        this._initPromiseRejectFn(new Error('connection closed'))
-        return super.close()
+        this._pendingFns.clear();
+        this._initPromiseRejectFn(new Error('connection closed'));
+        return super.close();
     }
 
     // ------------------------ status --------------------------------------------
 
     /** Sends a status command */
     public async sendStatusCommand(): Promise<StatusResponse> {
-        return new StatusResponse(await this._enqueueCommand('status'), this)
+        return new StatusResponse(await this._executeCommand('status'), this)
     }
 
     // ------------------------ feature negotiation --------------------------------
@@ -721,7 +672,7 @@ export class Connection extends DbgpConnection {
      * or any command.
      */
     public async sendFeatureGetCommand(feature: string): Promise<XMLDocument> {
-        return await this._enqueueCommand('feature_get', `-n ${feature}`)
+        return await this._executeCommand('feature_get', `-n ${feature}`);
     }
 
     /**
@@ -737,7 +688,7 @@ export class Connection extends DbgpConnection {
      *  - notify_ok
      */
     public async sendFeatureSetCommand(feature: string, value: string | number): Promise<FeatureSetResponse> {
-        return new FeatureSetResponse(await this._enqueueCommand('feature_set', `-n ${feature} -v ${value}`), this)
+        return new FeatureSetResponse(await this._executeCommand('feature_set', `-n ${feature} -v ${value}`), this)
     }
 
     // ---------------------------- breakpoints ------------------------------------
@@ -764,55 +715,60 @@ export class Connection extends DbgpConnection {
             args += ` -m ${breakpoint.fn}`
             data = breakpoint.expression
         }
-        return new BreakpointSetResponse(await this._enqueueCommand('breakpoint_set', args, data), this)
+        return new BreakpointSetResponse(await this._executeCommand('breakpoint_set', args, data), this)
     }
 
     /** sends a breakpoint_list command */
     public async sendBreakpointListCommand(): Promise<BreakpointListResponse> {
-        return new BreakpointListResponse(await this._enqueueCommand('breakpoint_list'), this)
+        return new BreakpointListResponse(await this._executeCommand('breakpoint_list'), this)
     }
 
     /** sends a breakpoint_remove command */
     public async sendBreakpointRemoveCommand(breakpoint: Breakpoint): Promise<Response> {
-        return new Response(await this._enqueueCommand('breakpoint_remove', `-d ${breakpoint.id}`), this)
+        return new Response(await this._executeCommand('breakpoint_remove', `-d ${breakpoint.id}`), this)
     }
 
     // ----------------------------- continuation ---------------------------------
 
     /** sends a run command */
     public async sendRunCommand(): Promise<StatusResponse> {
-        return new StatusResponse(await this._enqueueExecuteCommand('run'), this)
+        return new StatusResponse(await this._executeCommand('run'), this)
     }
 
     /** sends a step_into command */
     public async sendStepIntoCommand(): Promise<StatusResponse> {
-        return new StatusResponse(await this._enqueueExecuteCommand('step_into'), this)
+        return new StatusResponse(await this._executeCommand('step_into'), this)
     }
 
     /** sends a step_over command */
     public async sendStepOverCommand(): Promise<StatusResponse> {
-        return new StatusResponse(await this._enqueueExecuteCommand('step_over'), this)
+        return new StatusResponse(await this._executeCommand('step_over'), this)
     }
 
     /** sends a step_out command */
     public async sendStepOutCommand(): Promise<StatusResponse> {
-        return new StatusResponse(await this._enqueueExecuteCommand('step_out'), this)
+        return new StatusResponse(await this._executeCommand('step_out'), this)
     }
 
     /** sends a stop command */
     public async sendStopCommand(): Promise<StatusResponse> {
-        return new StatusResponse(await this._enqueueCommand('stop'), this)
+        return new StatusResponse(await this._executeCommand('stop'), this)
+    }
+
+    /** sends a break command */
+    public async sendBreakCommand() {
+        return new StatusResponse(await this._executeCommand('break'), this);
     }
 
     // ------------------------------ stack ----------------------------------------
 
     /** Sends a stack_get command */
     public async sendStackGetCommand(): Promise<StackGetResponse> {
-        return new StackGetResponse(await this._enqueueCommand('stack_get'), this)
+        return new StackGetResponse(await this._executeCommand('stack_get'), this)
     }
 
     public async sendSourceCommand(uri: string): Promise<SourceResponse> {
-        return new SourceResponse(await this._enqueueCommand('source', `-f ${uri}`), this)
+        return new SourceResponse(await this._executeCommand('source', `-f ${uri}`), this)
     }
 
     // ------------------------------ context --------------------------------------
@@ -820,7 +776,7 @@ export class Connection extends DbgpConnection {
     /** Sends a context_names command. */
     public async sendContextNamesCommand(stackFrame: StackFrame): Promise<ContextNamesResponse> {
         return new ContextNamesResponse(
-            await this._enqueueCommand('context_names', `-d ${stackFrame.level}`),
+            await this._executeCommand('context_names', `-d ${stackFrame.level}`),
             stackFrame
         )
     }
@@ -828,7 +784,7 @@ export class Connection extends DbgpConnection {
     /** Sends a context_get comand */
     public async sendContextGetCommand(context: Context): Promise<ContextGetResponse> {
         return new ContextGetResponse(
-            await this._enqueueCommand('context_get', `-d ${context.stackFrame.level} -c ${context.id}`),
+            await this._executeCommand('context_get', `-d ${context.stackFrame.level} -c ${context.id}`),
             context
         )
     }
@@ -837,7 +793,7 @@ export class Connection extends DbgpConnection {
     public async sendPropertyGetCommand(property: Property): Promise<PropertyGetResponse> {
         const escapedFullName = '"' + property.fullName.replace(/("|\\)/g, '\\$1') + '"'
         return new PropertyGetResponse(
-            await this._enqueueCommand(
+            await this._executeCommand(
                 'property_get',
                 `-d ${property.context.stackFrame.level} -c ${property.context.id} -n ${escapedFullName}`
             ),
@@ -849,6 +805,6 @@ export class Connection extends DbgpConnection {
 
     /** sends an eval command */
     public async sendEvalCommand(expression: string): Promise<EvalResponse> {
-        return new EvalResponse(await this._enqueueCommand('eval', undefined, expression), this)
+        return new EvalResponse(await this._executeCommand('eval', undefined, expression), this)
     }
 }

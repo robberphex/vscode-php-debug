@@ -620,31 +620,26 @@ class PhpDebugSession extends vscode.DebugSession {
         response: VSCodeDebugProtocol.ConfigurationDoneResponse,
         args: VSCodeDebugProtocol.ConfigurationDoneArguments
     ) {
-        let xdebugResponses: xdebug.StatusResponse[] = []
         try {
-            xdebugResponses = await Promise.all<xdebug.StatusResponse>(
-                Array.from(this._waitingConnections).map(connection => {
-                    this._waitingConnections.delete(connection)
-                    // either tell VS Code we stopped on entry or run the script
-                    if (this._args.stopOnEntry) {
-                        // do one step to the first statement
-                        return connection.sendStepIntoCommand()
-                    } else {
-                        return connection.sendRunCommand()
-                    }
-                })
-            )
+            Array.from(this._waitingConnections).map(connection => {
+                this._waitingConnections.delete(connection)
+                let p: Promise<xdebug.StatusResponse>;
+                // either tell VS Code we stopped on entry or run the script
+                if (this._args.stopOnEntry) {
+                    // do one step to the first statement
+                    p = connection.sendStepIntoCommand()
+                } else {
+                    p = connection.sendRunCommand()
+                }
+                p.then((statusResponse) => {
+                    this._checkStatus(statusResponse);
+                });
+            })
         } catch (error) {
             this.sendErrorResponse(response, <Error>error)
-            for (const response of xdebugResponses) {
-                this._checkStatus(response)
-            }
             return
         }
         this.sendResponse(response)
-        for (const response of xdebugResponses) {
-            this._checkStatus(response)
-        }
     }
 
     /** Executed after a successfull launch or attach request and after a ThreadEvent */
@@ -905,7 +900,9 @@ class PhpDebugSession extends vscode.DebugSession {
             if (!connection) {
                 throw new Error('Unknown thread ID ' + args.threadId)
             }
-            xdebugResponse = await connection.sendRunCommand()
+            connection.sendRunCommand().then((statusResponse) => {
+                this._checkStatus(statusResponse);
+            });
         } catch (error) {
             this.sendErrorResponse(response, error)
             if (xdebugResponse) {
@@ -917,7 +914,6 @@ class PhpDebugSession extends vscode.DebugSession {
             allThreadsContinued: false,
         }
         this.sendResponse(response)
-        this._checkStatus(xdebugResponse)
     }
 
     protected async nextRequest(response: VSCodeDebugProtocol.NextResponse, args: VSCodeDebugProtocol.NextArguments) {
@@ -927,7 +923,9 @@ class PhpDebugSession extends vscode.DebugSession {
             if (!connection) {
                 throw new Error('Unknown thread ID ' + args.threadId)
             }
-            xdebugResponse = await connection.sendStepOverCommand()
+            connection.sendStepOverCommand().then((xdebugResponse) => {
+                this._checkStatus(xdebugResponse);
+            });
         } catch (error) {
             this.sendErrorResponse(response, error)
             if (xdebugResponse) {
@@ -936,7 +934,6 @@ class PhpDebugSession extends vscode.DebugSession {
             return
         }
         this.sendResponse(response)
-        this._checkStatus(xdebugResponse)
     }
 
     protected async stepInRequest(
@@ -949,7 +946,9 @@ class PhpDebugSession extends vscode.DebugSession {
             if (!connection) {
                 throw new Error('Unknown thread ID ' + args.threadId)
             }
-            xdebugResponse = await connection.sendStepIntoCommand()
+            connection.sendStepIntoCommand().then((xdebugResponse) => {
+                this._checkStatus(xdebugResponse)
+            });
         } catch (error) {
             this.sendErrorResponse(response, error)
             if (xdebugResponse) {
@@ -958,7 +957,6 @@ class PhpDebugSession extends vscode.DebugSession {
             return
         }
         this.sendResponse(response)
-        this._checkStatus(xdebugResponse)
     }
 
     protected async stepOutRequest(
@@ -971,7 +969,9 @@ class PhpDebugSession extends vscode.DebugSession {
             if (!connection) {
                 throw new Error('Unknown thread ID ' + args.threadId)
             }
-            xdebugResponse = await connection.sendStepOutCommand()
+            connection.sendStepOutCommand().then((xdebugResponse) => {
+                this._checkStatus(xdebugResponse)
+            });
         } catch (error) {
             this.sendErrorResponse(response, error)
             if (xdebugResponse) {
@@ -980,7 +980,6 @@ class PhpDebugSession extends vscode.DebugSession {
             return
         }
         this.sendResponse(response)
-        this._checkStatus(xdebugResponse)
     }
 
     protected async pauseRequest(
@@ -993,7 +992,9 @@ class PhpDebugSession extends vscode.DebugSession {
             if (!connection) {
                 throw new Error('Unknown thread ID ' + args.threadId)
             }
-            xdebugResponse = await connection.sendStepOutCommand()
+            connection.sendBreakCommand().then((xdebugResponse) => {
+                this._checkStatus(xdebugResponse);
+            });
         } catch (error) {
             this.sendErrorResponse(response, error)
             if (xdebugResponse) {
@@ -1001,8 +1002,7 @@ class PhpDebugSession extends vscode.DebugSession {
             }
             return
         }
-        this.sendResponse(response)
-        this._checkStatus(xdebugResponse)
+        this.sendResponse(response);
     }
 
     protected async disconnectRequest(

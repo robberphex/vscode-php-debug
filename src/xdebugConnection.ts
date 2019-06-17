@@ -533,22 +533,6 @@ export class FeatureSetResponse extends Response {
     }
 }
 
-/** A command inside the queue */
-interface Command {
-    /** The name of the command, like breakpoint_list */
-    name: string
-    /** All arguments as one string */
-    args?: string
-    /** Data that gets appended after an " -- " in base64 */
-    data?: string
-    /** callback that gets called with an XML document when a response arrives that could be parsed */
-    resolveFn: (response: XMLDocument) => any
-    /** callback that gets called if an error happened while parsing the response */
-    rejectFn: (error?: Error) => any
-    /** whether command results in PHP code being executed or not */
-    isExecuteCommand: boolean
-}
-
 /**
  * This class represents a connection to Xdebug and is instantiated with a socket.
  */

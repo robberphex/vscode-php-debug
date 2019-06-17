@@ -781,10 +781,10 @@ class PhpDebugSession extends vscode.DebugSession {
             let properties: xdebug.Property[];
             if (this._properties.has(args.variablesReference)) {
                 // variablesReference is a property
-                const container = this._properties.get(args.variablesReference);
+                const container = this._properties.get(args.variablesReference)!;
                 properties = container.children;
             } else if (this._contexts.has(args.variablesReference)) {
-                const context = this._contexts.get(args.variablesReference);
+                const context = this._contexts.get(args.variablesReference)!;
                 properties = await context.getProperties();
             } else {
                 throw new Error('Unknown variable reference');

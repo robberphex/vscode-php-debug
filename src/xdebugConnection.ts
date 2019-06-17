@@ -458,7 +458,7 @@ export class Property extends BaseProperty {
     /**
      * Sets the value of this property through a property_set command
      */
-    public set(value: string): Promise<PropertyGetResponse> {
+    public set(value: string): Promise<Response> {
         return this.context.stackFrame.connection.sendPropertySetCommand(this, value);
     }
 

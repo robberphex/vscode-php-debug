@@ -123,4 +123,4 @@ VS Code will open an "Extension Development Host" with the debug adapter running
 
 The extension is written in TypeScript and compiled using a Gulpfile that first transpiles to ES6 and then uses Babel to specifically target VS Code's Node version. You can run the compile task through `npm run compile`, `gulp compile` or from VS Code with `Ctrl`+`Shift`+`B`. `npm run watch` / `gulp watch` enables incremental compilation.
 
-Tests are written with Mocha and can be run with `npm test`. The tests are run in CI on Linux and Windows against PHP 7.0 ~ 7.3 and Xdebug 2.7.0, [2.8.0](https://github.com/RobberPhex/xdebug/releases/tag/2.8.0).
+Tests are written with Mocha and can be run with `npm test`. The tests are run in CI on Linux and Windows against PHP 7.0 ~ 7.3 and Xdebug [3.0.0](https://github.com/RobberPhex/xdebug/releases/tag/3.0.0).

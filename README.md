@@ -80,6 +80,7 @@ Options specific to CLI debugging:
 - Stack traces, scope variables, superglobals, user defined constants
 - Arrays & objects (including classname, private and static properties)
 - Debug console
+- Set variables
 - Watches
 - Run as CLI
 - Run without debugging

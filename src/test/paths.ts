@@ -55,6 +55,15 @@ describe('paths', () => {
                     }),
                     'file:///app/source.php'
                 );
+                // longest
+                assert.equal(
+                    convertClientPathToDebugger('/home/felix/mysource/subdir/source.php', {
+                        '/var/www': '/home/felix/mysite',
+                        '/app': '/home/felix/mysource',
+                        '/app/subdir1': '/home/felix/mysource/subdir',
+                    }),
+                    'file:///app/subdir1/source.php'
+                );
             });
             // unix to windows
             it('should convert a unix path to a windows URI', () => {
@@ -164,6 +173,15 @@ describe('paths', () => {
                         '/app': '/home/felix/mysource',
                     }),
                     '/home/felix/mysource/source.php'
+                );
+                // longest
+                assert.equal(
+                    convertDebuggerPathToClient('file:///app/subdir/source.php', {
+                        '/var/www': '/home/felix/mysite',
+                        '/app': '/home/felix/mysource',
+                        '/app/subdir': '/home/felix/mysource/subdir1',
+                    }),
+                    '/home/felix/mysource/subdir1/source.php'
                 );
             });
             // unix to windows

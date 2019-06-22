@@ -128,9 +128,7 @@
         "runtime": "node",
         "configurationAttributes": {
           "launch": {
-            "required": [
-              "program"
-            ],
+            "required": [],
             "properties": {
               "program": {
                 "type": "string",

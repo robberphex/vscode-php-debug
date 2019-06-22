@@ -792,16 +792,32 @@ export class Connection extends DbgpConnection {
 
     /** Sends a property_get command */
     public async sendPropertyGetCommand(property: Property): Promise<PropertyGetResponse> {
-        return new PropertyGetResponse(await this._executeCommand('property_get', `-d ${property.context.stackFrame.level} -c ${property.context.id} -n ${escape(property.fullName)}`), property);
+        return new PropertyGetResponse(
+            await this._executeCommand(
+                'property_get',
+                `-d ${property.context.stackFrame.level} -c ${property.context.id} -n ${escape(property.fullName)}`
+            ),
+            property
+        );
     }
 
     /** Sends a property_set command */
     public async sendPropertySetCommand(property: Property, value: string): Promise<Response> {
-        return new Response(await this._executeCommand('property_set', [
-            '-d', property.context.stackFrame.level,
-            '-c', property.context.id,
-            '-n', escape(property.fullName)
-        ].join(' '), value), property.context.stackFrame.connection);
+        return new Response(
+            await this._executeCommand(
+                'property_set',
+                [
+                    '-d',
+                    property.context.stackFrame.level,
+                    '-c',
+                    property.context.id,
+                    '-n',
+                    escape(property.fullName),
+                ].join(' '),
+                value
+            ),
+            property.context.stackFrame.connection
+        );
     }
 
     // ------------------------------- eval -----------------------------------------

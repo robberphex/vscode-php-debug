@@ -776,7 +776,10 @@ class PhpDebugSession extends vscode.DebugSession {
         this.sendResponse(response);
     }
 
-    protected async setVariableRequest(response: VSCodeDebugProtocol.SetVariableResponse, args: VSCodeDebugProtocol.SetVariableArguments) {
+    protected async setVariableRequest(
+        response: VSCodeDebugProtocol.SetVariableResponse,
+        args: VSCodeDebugProtocol.SetVariableArguments
+    ) {
         try {
             let properties: xdebug.Property[];
             if (this._properties.has(args.variablesReference)) {
@@ -794,7 +797,7 @@ class PhpDebugSession extends vscode.DebugSession {
                 throw new Error('Property not found');
             }
             await property.set(args.value);
-            response.body = {value: args.value};
+            response.body = { value: args.value };
         } catch (error) {
             this.sendErrorResponse(response, error);
             return;
@@ -802,7 +805,10 @@ class PhpDebugSession extends vscode.DebugSession {
         this.sendResponse(response);
     }
 
-    protected async variablesRequest(response: VSCodeDebugProtocol.VariablesResponse, args: VSCodeDebugProtocol.VariablesArguments) {
+    protected async variablesRequest(
+        response: VSCodeDebugProtocol.VariablesResponse,
+        args: VSCodeDebugProtocol.VariablesArguments
+    ) {
         try {
             const variablesReference = args.variablesReference;
             let variables: VSCodeDebugProtocol.Variable[];

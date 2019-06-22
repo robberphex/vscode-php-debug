@@ -31,8 +31,8 @@ export function convertDebuggerPathToClient(
                 // it if the current server path is longer than the previous one
                 // (longest prefix matching)
                 if (!serverSourceRoot || mappedServerPath.length > serverSourceRoot.length) {
-                    serverSourceRoot = mappedServerPath
-                    localSourceRoot = mappedLocalSource
+                    serverSourceRoot = mappedServerPath;
+                    localSourceRoot = mappedLocalSource;
                 }
             }
         }
@@ -68,8 +68,8 @@ export function convertClientPathToDebugger(localPath: string, pathMapping?: { [
                 // it if the current local path is longer than the previous one
                 // (longest prefix matching)
                 if (!localSourceRoot || mappedLocalSource.length > localSourceRoot.length) {
-                    serverSourceRoot = mappedServerPath
-                    localSourceRoot = mappedLocalSource
+                    serverSourceRoot = mappedServerPath;
+                    localSourceRoot = mappedLocalSource;
                 }
             }
         }

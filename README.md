@@ -1,4 +1,8 @@
-# PHP Debug Adapter for Visual Studio Code
+# Visual Studio Code的PHP调试适配器
+
+[English Document](./README.en.md)
+
+此插件能让你在VS Code内，使用[Xdebug](https://xdebug.org/)调试PHP代码。
 
 [![vs marketplace](https://img.shields.io/vscode-marketplace/v/robberphex.php-debug.svg?label=vs%20marketplace)](https://marketplace.visualstudio.com/items?itemName=robberphex.php-debug)
 [![downloads](https://img.shields.io/vscode-marketplace/d/robberphex.php-debug.svg)](https://marketplace.visualstudio.com/items?itemName=robberphex.php-debug)
@@ -9,81 +13,83 @@
 
 ![Demo GIF](images/demo.gif)
 
-## Installation
+## 安装
 
-Install the extension: Press `F1`, type `ext install php-debug`.
-
-This extension is a debug adapter between VS Code and [Xdebug](https://xdebug.org/) by Derick Rethan. Xdebug is a PHP extension (a `.so` file on Linux and a `.dll` on Windows) that needs to be installed on your server.
+按`F1`，输入`ext install robberphex.php-debug`即可安装此插件。
 
 1. [Install Xdebug](https://xdebug.org/docs/install)
 
-2. [Configure PHP to use Xdebug](https://xdebug.org/docs/install#configure-php) by adding `zend_extension=path/to/xdebug` to your php.ini. The path of your php.ini is shown in your `phpinfo()` output under "Loaded Configuration File".
+2. [配置PHP和Xdebug](https://xdebug.org/docs/install#configure-php)。添加`zend_extension=path/to/xdebug`到php.ini文件中。其中php.ini的路径可以在`phpinfo()`的输出中"Loaded Configuration File"节找到。
 
-3. Enable remote debugging in your `php.ini`:
+3. 在`php.ini`的配置中开启远程调试：
 
-   ```ini
-   [Xdebug]
-   xdebug.remote_enable = 1
-   xdebug.remote_autostart = 1
-   ```
+  ```ini
+  [Xdebug]
+  xdebug.remote_enable = 1
+  xdebug.remote_autostart = 1
+  ```
 
-   There are other ways to tell Xdebug to connect to a remote debugger than `remote_autostart`, like cookies, query parameters or browser extensions. I recommend `remote_autostart` because it "just works". There are also a variety of other options, like the port (by default 9000), please see the [Xdebug documentation on remote debugging](https://xdebug.org/docs/remote#starting) for more information.
+  当然，除了`remote_autostart`，也有其他的方式来开启远程调试。一些Xdebug的配置，也可以自己修改。具体请参考[Xdebug关于远程调试的文档](https://xdebug.org/docs/remote#starting)。
 
-4. If you are doing web development, don't forget to restart your webserver to reload the settings.
+4. 如果是web开发，请不要忘记重启你的web服务器（比如php-fpm或者apache httpd）。
 
-5. Verify your installation by checking your `phpinfo()` output for an Xdebug section.
+5. 检查`phpinfo()`输出中的Xdebug节，确认配置无误。
 
-### VS Code Configuration
+### VS Code配置
 
-In your project, go to the debugger and hit the little gear icon and choose _PHP_. A new launch configuration will be created for you with two configurations:
+在PHP项目中，切换到调试选项，点击齿轮按钮，选择*PHP*。这时就出现两个新的配置：
 
 - **Listen for Xdebug**
-  This setting will simply start listening on the specified port (by default 9000) for Xdebug. If you configured Xdebug like recommended above, everytime you make a request with a browser to your webserver or launch a CLI script Xdebug will connect and you can stop on breakpoints, exceptions etc.
+  该设置将开始监听Xdebug的指定端口(默认为9000)。如果您像上面建议的那样配置Xdebug，那么每次您使用浏览器向您的web服务器发出请求或启动CLI脚本时，Xdebug都会连接到VS Code，您可以让程序在断点、异常等处暂停。
 - **Launch currently open script**
-  This setting is an example of CLI debugging. It will launch the currently opened script as a CLI, show all stdout/stderr output in the debug console and end the debug session once the script exits.
+  这个设置是CLI调试的一个例子。它将以CLI的形式启动当前打开的脚本，在调试控制台中显示所有stdout/stderr输出，并在脚本退出后结束调试会话。
 
-#### Supported launch.json settings:
+#### launch.json支持的设置选项：
 
-- `request`: Always `"launch"`
-- `hostname`: The address to bind to when listening for Xdebug (default: all IPv6 connections if available, else all IPv4 connections)
-- `port`: The port on which to listen for Xdebug (default: `0`)
-- `stopOnEntry`: Whether to break at the beginning of the script (default: `false`)
-- `pathMappings`: A list of server paths mapping to the local source paths on your machine, see "Remote Host Debugging" below
-- `log`: Whether to log all communication between VS Code and the adapter to the debug console. See _Troubleshooting_ further down.
-- `ignore`: An optional array of glob patterns that errors should be ignored from (for example `**/vendor/**/*.php`)
-- `xdebugSettings`: Allows you to override Xdebug's remote debugging settings to fine tuning Xdebug to your needs. For example, you can play with `max_children` and `max_depth` to change the max number of array and object children that are retrieved and the max depth in structures like arrays and objects. This can speed up the debugger on slow machines.
-  For a full list of feature names that can be set please refer to the [Xdebug documentation](https://xdebug.org/docs-dbgp.php#feature-names).
-  - `max_children`: max number of array or object children to initially retrieve
-  - `max_data`: max amount of variable data to initially retrieve.
-  - `max_depth`: maximum depth that the debugger engine may return when sending arrays, hashs or object structures to the IDE.
-  - `show_hidden`: This feature can get set by the IDE if it wants to have more detailed internal information on properties (eg. private members of classes, etc.) Zero means that hidden members are not shown to the IDE.
+- `request`：只能是 `"launch"`
+- `hostname`：监听Xdebug连接时绑定的地址。(默认是所有的网络地址)
+- `port`:监听Xdebug连接时绑定的端口。(默认：`0`，表示随机选择一个端口)
+- `stopOnEntry`: 是否在脚本的第一行暂停。(默认值: `false`)
+- `pathMappings`: 服务器路径映射到机器上的本地源路径的列表，请参阅下面的“远程主机调试”
+- `log`: 是否将VS代码与适配器之间的所有通信记录到调试控制台。请参阅下面的_Troubleshooting_。
+- `ignore`: 一个可选的glob模式数组，在这些文件中的错误应该被忽略(比如`**/vendor/**/*.php`)
+- `xdebugSettings`: 允许您覆盖Xdebug的远程调试设置，以根据需要微调Xdebug。例如，您可以使用' max_children '和' max_depth '来更改检索到的数组和对象子对象的最大数量以及数组和对象等结构中的最大深度。这可以在运行缓慢的机器上加速调试器。
+  有关可设置的功能名称的完整列表，请参阅[Xdebug 文档](https://xdebug.org/docs-dbgp.php#feature-names)。
+  - `max_children`: 最初要检索的数组或对象的子对象的最大数量。
+  - `max_data`: 初始查看的最大变量数。
+  - `max_depth`: 调试器引擎在向IDE发送数组、散列或对象结构时可能返回的最大深度。
+  - `show_hidden`: 如果IDE希望获得关于属性的更详细的内部信息(例如，类的私有成员，等等)。0表示隐藏成员不会显示到IDE中。
 
-Options specific to CLI debugging:
+用于CLI调试的特殊选项：
 
-- `program`: Path to the script that should be launched
-- `args`: Arguments passed to the script
-- `cwd`: The current working directory to use when launching the script
-- `runtimeExecutable`: Path to the PHP binary used for launching the script. By default the one on the PATH.
-- `runtimeArgs`: Additional arguments to pass to the PHP binary
-- `externalConsole`: Launches the script in an external console window instead of the debug console (default: `false`)
-- `env`: Environment variables to pass to the script
+- `program`: 要启动的脚本
+- `args`: 脚本的参数
+- `cwd`: 脚本启动时的当前目录
+- `runtimeExecutable`: 用于启动脚本的PHP解释器路径。默认情况下是PATH中找到的那个。
+- `runtimeArgs`: 给解释器的其他参数
+- `externalConsole`: 在外部控制台窗口而不是调试控制台中启动脚本(默认为“false”)
+- `env`: 给脚本的环境变量
 
-## Features
+## 特性
 
-- Line breakpoints
-- Conditional breakpoints
-- Function breakpoints
-- Step over, step in, step out
-- Break on entry
-- Breaking on uncaught exceptions and errors / warnings / notices
-- Multiple, parallel requests
-- Stack traces, scope variables, superglobals, user defined constants
-- Arrays & objects (including classname, private and static properties)
-- Debug console
-- Set variables
-- Watches
-- Run as CLI
-- Run without debugging
+### 继承自[felixfbecker/vscode-php-debug](https://github.com/felixfbecker/vscode-php-debug)：
+- 行断点
+- 条件断点
+- 函数断点
+- 单步步过，单步步入，单步步出
+- 进入断点
+- 发生异常、警告时暂停
+- 同时调试多个请求。
+- 调试堆栈、每个堆栈的变量、全局变量的查看
+- 数组和对象查看 (包括类名、私有和静态属性)
+- 调试终端
+- 观察点
+- CLI模式运行/调试
+
+### 新功能：
+- 设置变量的值
+- 调试器可主动暂停程序（[pr of Xdebug](https://github.com/xdebug/xdebug/pull/477)）
+- port为0的时候，随机选择端口监听（CLI模式下比较方便）
 
 ## Remote Host Debugging
 

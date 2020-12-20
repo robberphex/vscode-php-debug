@@ -15,16 +15,16 @@ jobs:
           - 7.4
           - 8.0
         xdebug-version:
-          - 2.7
-          - 2.9
-          - 3.0
+          - 2.7.2
+          - 2.9.8
+          - 3.0.1
         exclude:
+          # - php-version: 7.0
+          #   xdebug-version: 2.9
           - php-version: 7.0
-            xdebug-version: 2.9
-          - php-version: 7.0
-            xdebug-version: 3.0
+            xdebug-version: 3.0.1
           - php-version: 8.0
-            xdebug-version: 3.0
+            xdebug-version: 3.0.1
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js
@@ -37,6 +37,8 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-version }}
+    - name: php -i
+      run: pecl install xdebug-${{matrix.xdebug-version}}
     - name: php -i
       run: php -i
     - run: npm test

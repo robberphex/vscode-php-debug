@@ -1,0 +1,45 @@
+name: Node.js CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version:
+          - 7.0
+          - 7.3
+          - 7.4
+          - 8.0
+        xdebug-version:
+          - 2.7
+          - 2.9
+          - 3.0
+        exclude:
+          - php-version: 7.0
+            xdebug-version: 2.9
+          - php-version: 7.0
+            xdebug-version: 3.0
+          - php-version: 8.0
+            xdebug-version: 3.0
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+    - run: npm install
+    - run: npm run build --if-present
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+    - name: php -i
+      run: php -i
+    - run: npm test
+      env:
+        CI: true
+

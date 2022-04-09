@@ -36,7 +36,7 @@
     "file-url": "^3.0.0",
     "iconv-lite": "^0.4.24",
     "minimatch": "^3.0.3",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "url-relative": "^1.0.0",
     "urlencode": "^1.1.0",
     "vscode-debugadapter": "^1.34.0",
